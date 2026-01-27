@@ -30,6 +30,16 @@ public:
         if (len == 0.0) return *this;  // Evita divisão por zero
         return *this / len;
     }
+
+    Vec4 cross (const Vec4& b) const {
+        return Vec4{
+            y * b.z - z * b.y,
+            z * b.x - x * b.z,
+            x * b.y - y * b.x,
+            0
+        };
+    }
+
 };
 
 #endif // VEC4_HPP

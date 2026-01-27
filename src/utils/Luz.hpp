@@ -2,7 +2,7 @@
 #define LUZ_HPP
 
 #include "Vec4.hpp"  // Inclui a definição do vetor 4D (para posição da luz e intensidade)
-
+#include "Transform.hpp"
 class Luz {
 public:
     Vec4 pos;          // Posição da luz (para luzes pontuais)
@@ -16,7 +16,7 @@ public:
 
     // Método para aplicar a intensidade da luz
     Vec4 intensidadeComLuz(const Vec4& cor) const {
-        return intensidade * cor.length();  // Intensidade modulada pela cor do objeto
+        return hadamard(intensidade, cor); // componente a componente
     }
 };
 

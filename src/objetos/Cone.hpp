@@ -178,7 +178,10 @@ public:
         Vec4 Ie = hadamard(luz.intensidade, Ke) * specpow;  // Emissão
         Vec4 Id = hadamard(luz.intensidade, Kd) * cosNL;    // Difusa
         Vec4 Ia = hadamard(luzAmb.intensidade, Ka);          // Ambiente
-        Vec4 I = Ie + Id + Ia;
+        Vec4 I = Ia;
+        if(!isInShadow){
+            I = Ie + Id + Ia;
+        }
 
         // Converte para valores RGB [0..255]
         int R = clamp255(I.x * 255.0);
