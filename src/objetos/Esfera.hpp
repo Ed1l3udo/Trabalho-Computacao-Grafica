@@ -21,7 +21,7 @@ public:
         : centro(centro), raio(raio), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
+    bool intersectLocal(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
         Vec4 w = origem - centro;
         double B = 2.0 * w.dot(rayDir);
         double C = w.dot(w) - raio * raio;
@@ -44,7 +44,9 @@ public:
 
     // Método para calcular a cor com base na iluminação
     Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
-        Vec4 n = normalize(intersection - centro);  // Vetor normal da superfície
+        Vec4 pL = toLocalPoint(intersection);          // ponto no espaço do objeto
+        Vec4 nL = normalize(pL - centro);              // normal no espaço local
+        Vec4 n  = normalToWorld(nL);                   // normal no mundo (inv-transpose) // Vetor normal da superfície
         Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador
         double cosNL = std::max(0.0, n.dot(l));  // Cálculo do ângulo de incidência
@@ -64,7 +66,7 @@ public:
         if(!isInShadow){
             I = Ie + Id + Ia;
         }
-        
+
         // Converte para valores RGB [0..255]
         int R = clamp255(I.x * 255.0);
         int G = clamp255(I.y * 255.0);

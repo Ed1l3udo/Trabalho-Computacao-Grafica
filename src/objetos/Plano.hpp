@@ -21,7 +21,7 @@ public:
         : n(n), Pi(Pi), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
+    bool intersectLocal(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
         double denom = n.dot(rayDir);  // Verifica se o raio é paralelo ao plano
         if (denom == 0) {
             return false;  // Raio paralelo ao plano, sem interseção

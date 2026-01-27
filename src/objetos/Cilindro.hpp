@@ -25,7 +25,7 @@ public:
         : centroBase(centroBase), dir(normalize(dir)), raioBase(raioBase), altura(altura), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origem, const Vec4& dir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
+    bool intersectLocal(const Vec4& origem, const Vec4& dir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
     {
         // Corpo
         bool encostou_corpo;
@@ -203,23 +203,26 @@ public:
 
     // Método para calcular a cor com base na iluminação
     Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
-        Vec4 n;  // Vetor normal
-
+    
+        Vec4 pL = toLocalPoint(intersection);
+        Vec4 nL;
         switch (tipoDeColisao) {
             case Corpo: {
-                // Cálculos para o corpo do cilindro
-                n = normalize((intersection - centroBase) - (dir * ((intersection - centroBase).dot(dir))));  // Normal do corpo
+                Vec4 v = (pL - centroBase);
+                nL = normalize(v - dir * (v.dot(dir)));
                 break;
             }
             case Base: {
-                n = -dir;  // Normal da base do cilindro (invertido)
+                nL = -dir;
                 break;
             }
             case Topo: {
-                n = dir;  // Normal do topo do cilindro
+                nL = dir;
                 break;
             }
         }
+        Vec4 n = normalToWorld(nL);
+
 
         Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador

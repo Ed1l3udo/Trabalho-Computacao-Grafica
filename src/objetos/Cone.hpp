@@ -27,7 +27,7 @@ public:
         : centroBase(centroBase), dir(normalize(dir)), raioBase(raioBase), altura(altura), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origin, const Vec4& dir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override
+    bool intersectLocal(const Vec4& origin, const Vec4& dir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override
     {
         // Corpo
         bool encostou_corpo;
@@ -146,22 +146,26 @@ public:
 
     // Método para calcular a cor com base na iluminação
     Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
-        Vec4 n;  // Vetor normal
+    
+        Vec4 pL = toLocalPoint(intersection);
+        Vec4 nL;
         switch (tipoDeColisao) {
             case Corpo: {
                 Vec4 topo = this->centroBase + this->dir * this->altura;
                 double k = this->raioBase/this->altura;
-                Vec4 topToIntersection = intersection - topo;
-                Vec4 topToIntersection_Y = this->dir*(topToIntersection.dot(this->dir));
-                Vec4 topToIntersection_X = topToIntersection - topToIntersection_Y; // vetor da interseção ao eixo
-                n = normalize(topToIntersection_X - topToIntersection_Y*(k*k));
+
+                Vec4 topToIntersection = pL - topo;
+                Vec4 topToIntersection_Y = this->dir * (topToIntersection.dot(this->dir));
+                Vec4 topToIntersection_X = topToIntersection - topToIntersection_Y;
+                nL = normalize(topToIntersection_X - topToIntersection_Y*(k*k));
                 break;
             }
             case Base: {
-                n = -(this->dir);  // Normal da base
+                nL = -(this->dir);
                 break;
             }
         }
+        Vec4 n = normalToWorld(nL);
 
         Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador

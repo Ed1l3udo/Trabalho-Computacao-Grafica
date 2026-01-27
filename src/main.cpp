@@ -11,6 +11,8 @@
 #include "Cone.hpp"
 #include "Colisao.hpp"
 #include "Camera.hpp"
+#include "Malha.hpp"
+#include "Mat4.hpp"
 
 // Função para calcular a cor do pixel e salvar no arquivo
 void saveColor(std::ofstream& img, const Color& cor) {
@@ -43,7 +45,7 @@ int main() {
     // Vec4 luzPos(10, 10, 10, 1);  // Posição da luz
     // Vec4 luzIntensidade(1.0, 1.0, 1.0, 0);  // Intensidade da luz
     // Luz luzPontual(luzPos, luzIntensidade);
-    Luz luzPontual(Vec4{10, 10, 2, 1}, Vec4{1, 1, 1, 0});
+    Luz luzPontual(Vec4{0, 10, 0, 1}, Vec4{1, 1, 1, 0});
     luzes.push_back(luzPontual);
     
     // // Luz ambiente
@@ -61,18 +63,24 @@ int main() {
     std::vector<std::unique_ptr<Objeto>> objetos;
 
 
-    objetos.push_back(std::make_unique<Esfera>(
-        Vec4(6, 2, 8, 1), 1,
-        Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0));
+    auto esfera = std::make_unique<Esfera>(
+        Vec4(0, 0, 0, 1), 1,
+        Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0);
+    esfera->setTransform(Mat4::translation(6, 2, 8)); // coloca no mundo (primeiro octante)
 
-    objetos.push_back(std::make_unique<Cilindro>(
-        Vec4(9, 1, 8, 1), Vec4(0, 1, 0, 0), 1, 3,
-        Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0));
+    auto cilindro = std::make_unique<Cilindro>(
+        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+        Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
+    cilindro->setTransform(Mat4::translation(9, 1, 8) * Mat4::rotateZ(0.3)); // translação + rotação
 
-    objetos.push_back(std::make_unique<Cone>(
-        Vec4(3, 1, 8, 1), Vec4(0, 1, 0, 0), 1, 3,
-        Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0));
-
+    auto cone = std::make_unique<Cone>(
+        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+        Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
+    cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
+    
+    objetos.push_back(std::move(esfera));
+    objetos.push_back(std::move(cilindro));
+    objetos.push_back(std::move(cone));
 
     // Configurações de imagem (janela de visualização)
     double wJanela = 60;
@@ -149,20 +157,23 @@ int main() {
                 Vec4 shadowDir = normalize(toLight);
 
                 // empurra um pouquinho para evitar "self-shadow"
-                Vec4 shadowOrigin = P + shadowDir * 1e-4;
+                Vec4 shadowOrigin = P + shadowDir * 1e-3;
 
                 for (auto& obj : objetos) {
+                    if (obj.get() == objHit) continue; // evita auto-sombra
+
                     Vec4 pS;
                     double tS;
                     Colisao tipoS;
 
                     if (obj->intersect(shadowOrigin, shadowDir, pS, tS, tipoS)) {
-                        if (tS > 1e-6 && tS < distToLight) {
+                        if (tS > 1e-6 && tS < distToLight - 1e-4) {
                             isInShadow = true;
                             break;
                         }
                     }
                 }
+
             corFinal = objHit->calculaCor(origem, pHit, luzPontual, luzAmb, tipoHit, isInShadow);
             }
 
