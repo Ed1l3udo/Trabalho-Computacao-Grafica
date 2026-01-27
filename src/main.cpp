@@ -35,9 +35,9 @@ int main() {
     Luz luzAmb(luzAmbiente);
     
     // Criando objetos (Esfera, Cilindro, Cone)
-    Esfera esfera(Vec4(0, 0, -5, 1), 1, Vec4(1, 0, 0, 0), Vec4(0.8, 0.8, 0.8, 0), Vec4(0.2, 0.2, 0.2, 0), 50.0);
-    Cilindro cilindro(Vec4(2, 0, -5, 1), Vec4(0, 1, 0, 0), 1, 3, Vec4(0, 1, 0, 0), Vec4(0.8, 0.8, 0.8, 0), Vec4(0.2, 0.2, 0.2, 0), 50.0);
-    Cone cone(Vec4(-2, 0, -5, 1), Vec4(0, 1, 0, 0), 1, 3, Vec4(0, 0, 1, 0), Vec4(0.8, 0.8, 0.8, 0), Vec4(0.2, 0.2, 0.2, 0), 50.0);
+    Esfera esfera(Vec4(0, 0, -5, 1), 1, Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0);
+    Cilindro cilindro(Vec4(2, 0, -5, 1), Vec4(0, -1, -1, 0), 1, 3, Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
+    Cone cone(Vec4(-2, 0, -5, 1), Vec4(0, -1, -1, 0), 1, 3, Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
 
     // Configurações de imagem (janela de visualização)
     double wJanela = 60;
@@ -62,22 +62,25 @@ int main() {
             double t;
             bool tocouObjeto = false;
             Color corFinal(0, 0, 0);
+            Colisao colisaoEsfera;
+            Colisao colisaoCone;
+            Colisao colisaoCilindro;
 
             // Verificando interseções com a Esfera
-            if (esfera.intersect(origem, rayDir, intersection, t)) {
+            if (esfera.intersect(origem, rayDir, intersection, t, colisaoEsfera)) {
                 corFinal = esfera.calculaCor(origem, intersection, luzPontual, luzAmbiente, Colisao::Nenhuma, false);
                 tocouObjeto = true;
             }
 
             // Verificando interseções com o Cilindro
-            if (cilindro.intersect(origem, rayDir, intersection, t)) {
-                corFinal = cilindro.calculaCor(origem, intersection, luzPontual, luzAmbiente, Colisao::Corpo, false);
+            if (cilindro.intersect(origem, rayDir, intersection, t, colisaoCilindro)) {
+                corFinal = cilindro.calculaCor(origem, intersection, luzPontual, luzAmbiente, colisaoCilindro, false);
                 tocouObjeto = true;
             }
 
             // Verificando interseções com o Cone
-            if (cone.intersect(origem, rayDir, intersection, t)) {
-                corFinal = cone.calculaCor(origem, intersection, luzPontual, luzAmbiente, Colisao::Corpo, false);
+            if (cone.intersect(origem, rayDir, intersection, t, colisaoCone)) {
+                corFinal = cone.calculaCor(origem, intersection, luzPontual, luzAmbiente, colisaoCone, false);
                 tocouObjeto = true;
             }
 

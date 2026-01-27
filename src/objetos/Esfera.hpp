@@ -21,9 +21,9 @@ public:
         : centro(centro), raio(raio), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origem, const Vec4& dir, Vec4& intersection, double& t) const override {
+    bool intersect(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
         Vec4 w = origem - centro;
-        double B = 2.0 * w.dot(dir);
+        double B = 2.0 * w.dot(rayDir);
         double C = w.dot(w) - raio * raio;
         double delta = B * B - 4.0 * C;
         
@@ -38,12 +38,12 @@ public:
         if (t < 0.0) return false;
 
         // Calcula o ponto de interseção
-        intersection = origem + dir * t;
+        intersection = origem + rayDir * t;
         return true;
     }
 
     // Método para calcular a cor com base na iluminação
-    Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, bool isInShadow) const override {
+    Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
         Vec4 n = normalize(intersection - centro);  // Vetor normal da superfície
         Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador

@@ -21,8 +21,8 @@ public:
         : n(n), Pi(Pi), Ke(Ke), Kd(Kd), Ka(Ka), m(m) {}
 
     // Método para verificar a interseção com um raio
-    bool intersect(const Vec4& origem, const Vec4& dir, Vec4& intersection, double& t) const override {
-        double denom = n.dot(dir);  // Verifica se o raio é paralelo ao plano
+    bool intersect(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override {
+        double denom = n.dot(rayDir);  // Verifica se o raio é paralelo ao plano
         if (denom == 0) {
             return false;  // Raio paralelo ao plano, sem interseção
         }
@@ -35,12 +35,12 @@ public:
         }
 
         // Calcula o ponto de interseção
-        intersection = origem + dir * t;
+        intersection = origem + rayDir * t;
         return true;
     }
 
     // Método para calcular a cor com base na iluminação
-    Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, bool isInShadow) const override {
+    Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
         Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador
         double cosNL = std::max(0.0, n.dot(l));      // Cálculo do ângulo de incidência (difuso)

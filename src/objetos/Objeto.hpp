@@ -9,15 +9,10 @@
 class Objeto {
 public:
     // Método para verificar a interseção com um raio
-    virtual bool intersect(const Vec4& origem, const Vec4& dir, Vec4& intersection, double& t) const = 0;
+    virtual bool intersect(const Vec4& origem, const Vec4& rayDir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const = 0;
 
     // Versão do método calculaCor com tipoDeColisao (para objetos que precisam desse parâmetro)
     virtual Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const = 0;
-
-    // Versão do método calculaCor sem tipoDeColisao (para objetos que não precisam desse parâmetro)
-    virtual Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, bool isInShadow) const {
-        return calculaCor(origem, intersection, luz, luzAmb, Colisao::Nenhuma, isInShadow);  // Chama a versão com tipoDeColisao com o valor padrão
-    }
 
     virtual ~Objeto() = default;  // Destruidor virtual
 };
