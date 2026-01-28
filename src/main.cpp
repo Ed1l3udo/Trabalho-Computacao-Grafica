@@ -6,6 +6,7 @@
 #include "Color.hpp"
 #include "Luz.hpp"
 #include "Objeto.hpp"
+#include "Caixa.hpp"
 #include "Esfera.hpp"
 #include "Cilindro.hpp"
 #include "Cone.hpp"
@@ -13,6 +14,7 @@
 #include "Camera.hpp"
 #include "Malha.hpp"
 #include "Mat4.hpp"
+#include "Texture.hpp"
 
 // Função para calcular a cor do pixel e salvar no arquivo
 void saveColor(std::ofstream& img, const Color& cor) {
@@ -68,19 +70,60 @@ int main() {
         Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0);
     esfera->setTransform(Mat4::translation(6, 2, 8)); // coloca no mundo (primeiro octante)
 
-    auto cilindro = std::make_unique<Cilindro>(
-        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-        Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
-    cilindro->setTransform(Mat4::translation(9, 1, 8) * Mat4::rotateZ(0.3)); // translação + rotação
+    auto texGlobo = std::make_shared<CheckerTexture>(
+        Vec4{0.1, 0.4, 1.0, 0},   // azul
+        Vec4{0.9, 0.9, 0.9, 0},   // branco
+        24, 12                   // quantidade de quadrados
+    );
 
-    auto cone = std::make_unique<Cone>(
-        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-        Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
-    cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
+    esfera->setTexture(texGlobo);
+
+    // auto cilindro = std::make_unique<Cilindro>(
+    //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+    //     Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
+    // cilindro->setTransform(Mat4::translation(9, 1, 8) * Mat4::rotateZ(0.3)); // translação + rotação
+
+    // auto cone = std::make_unique<Cone>(
+    //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+    //     Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
+    // cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
     
     objetos.push_back(std::move(esfera));
-    objetos.push_back(std::move(cilindro));
-    objetos.push_back(std::move(cone));
+    // objetos.push_back(std::move(cilindro));
+    // objetos.push_back(std::move(cone));
+
+    // auto chao = std::make_unique<Caixa>(
+    //     Vec4(0,0,0,1), Vec4(1,1,1,1),
+    //     Vec4(0.2,0.2,0.2,0),   // Ke
+    //     Vec4(0.7,0.7,0.7,0),   // Kd
+    //     Vec4(0.08,0.08,0.08,0),// Ka
+    //     30.0
+    // );
+
+    // // transforma um cubo unitário em uma “laje” grande
+    // chao->setTransform(
+    //     Mat4::translation(1, 0.5, 1) *   // coloca no mundo
+    //     Mat4::scale(12, 0.2, 12)         // vira piso
+    // );
+
+    // objetos.push_back(std::move(chao));
+
+    auto teclado = std::make_unique<Malha>(
+        "models/teclado.obj",
+        Vec4{0.25,0.25,0.25,0},   // Ke (spec)
+        Vec4{0.15,0.15,0.15,0},   // Kd (difuso)
+        Vec4{0.06,0.06,0.06,0},   // Ka (ambiente)
+        40.0
+    );
+
+    // colocar em cima da mesa (tudo positivo)
+    teclado->setTransform(
+        Mat4::translation(4.5, 1.25, 6.5) *  // ajuste a altura conforme sua mesa
+        Mat4::scale(1.0, 1.0, 1.0)
+    );
+
+    objetos.push_back(std::move(teclado));
+
 
     // Configurações de imagem (janela de visualização)
     double wJanela = 60;

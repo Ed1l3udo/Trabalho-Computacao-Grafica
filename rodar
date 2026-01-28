@@ -1,0 +1,1 @@
+g++ -std=c++17 -I./src/utils -I./src/objetos src/main.cpp -o app

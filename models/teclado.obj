@@ -1,0 +1,35 @@
+# teclado simples (wedge) - triangulado
+v 0.0 0.0 0.0
+v 6.0 0.0 0.0
+v 6.0 0.0 3.0
+v 0.0 0.0 3.0
+
+# topo inclinado: frente mais baixo, trás mais alto
+v 0.0 0.15 0.0
+v 6.0 0.15 0.0
+v 6.0 0.35 3.0
+v 0.0 0.35 3.0
+
+# TOP (2 tri)
+f 5 6 7
+f 5 7 8
+
+# BOTTOM (2 tri)
+f 1 3 2
+f 1 4 3
+
+# FRONT (2 tri)
+f 1 2 6
+f 1 6 5
+
+# BACK (2 tri)
+f 4 8 7
+f 4 7 3
+
+# LEFT (2 tri)
+f 1 5 8
+f 1 8 4
+
+# RIGHT (2 tri)
+f 2 3 7
+f 2 7 6
