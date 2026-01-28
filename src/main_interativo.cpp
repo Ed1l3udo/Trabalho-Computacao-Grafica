@@ -77,7 +77,7 @@ static void renderRow(
     int y, int w, int h,
     const Camera& cam,
     const std::vector<std::unique_ptr<Objeto>>& objetos,
-    const Luz& luzPontual,
+    const Luz& luzPrincipal,
     const Luz& luzAmb,
     Objeto* selected,
     std::vector<unsigned char>& outRGBA
@@ -110,26 +110,29 @@ static void renderRow(
         if (objHit) {
             // sombra (shadow ray)
             bool isInShadow = false;
-            Vec4 toLight = luzPontual.pos - pHit;
-            double distToLight = toLight.length();
-            Vec4 shadowDir = normalize(toLight);
-            Vec4 shadowOrigin = pHit + shadowDir * 1e-3;
+            if (luzPrincipal.factorAt(pHit) <= 0.0) {
+                isInShadow = true;
+            } else {
+                Vec4 shadowDir = luzPrincipal.Lvec(pHit);
+                double distLimit = luzPrincipal.maxDistance(pHit);
+                Vec4 shadowOrigin = pHit + shadowDir * 1e-3;
 
-            for (auto& obj : objetos) {
-                if (obj.get() == objHit) continue; // evita auto-sombra
+                for (auto& obj : objetos) {
+                    if (obj.get() == objHit) continue; // evita auto-sombra
 
-                Vec4 pS;
-                double tS;
-                Colisao tipoS;
-                if (obj->intersect(shadowOrigin, shadowDir, pS, tS, tipoS)) {
-                    if (tS > 1e-6 && tS < distToLight - 1e-3) {
-                        isInShadow = true;
-                        break;
+                    Vec4 pS;
+                    double tS;
+                    Colisao tipoS;
+                    if (obj->intersect(shadowOrigin, shadowDir, pS, tS, tipoS)) {
+                        if (tS > 1e-6 && tS < distLimit - 1e-3) {
+                            isInShadow = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            corFinal = objHit->calculaCor(origem, pHit, luzPontual, luzAmb, tipoHit, isInShadow);
+            corFinal = objHit->calculaCor(origem, pHit, luzPrincipal, luzAmb, tipoHit, isInShadow);
 
             if (objHit == selected) {
                 corFinal = blendHighlight(corFinal);
@@ -241,6 +244,10 @@ int main() {
 
     Luz luzPontual(Vec4{10, 10, 2, 1}, Vec4{1,1,1,0});
     Luz luzAmb(Vec4{0.2,0.2,0.2,0});
+    Luz luzDir  = Luz::Direcional(Vec4{-1,-1,0,0}, Vec4{1,1,1,0});
+    Luz luzSpot = Luz::Spot(Vec4{10,10,2,1}, Vec4{-1,-1,0,0}, 20.0, Vec4{1,1,1,0});
+
+    Luz luzPrincipal = luzPontual;
 
     std::vector<std::unique_ptr<Objeto>> objetos;
     // TODO: adicione seus objetos aqui (esfera/cilindro/cone/caixa/malha etc.)
@@ -375,9 +382,24 @@ int main() {
         if (IsKeyPressed(KEY_F2)) { setPreset2Point(cam); needRestart = true; }
         if (IsKeyPressed(KEY_F3)) { setPreset3Point(cam); needRestart = true; }
 
+        if (IsKeyPressed(KEY_L)) {
+            if (luzPrincipal.tipo == TipoLuz::Pontual) luzPrincipal = luzDir;
+            else if (luzPrincipal.tipo == TipoLuz::Direcional) luzPrincipal = luzSpot;
+            else luzPrincipal = luzPontual;
+            needRestart = true;
+        }
+
+        // ajustar cutoff do spot
+        if (luzPrincipal.tipo == TipoLuz::Spot) {
+            static double cutoffDeg = 20.0;
+            if (IsKeyPressed(KEY_LEFT_BRACKET)) { cutoffDeg = std::max(5.0, cutoffDeg - 5.0); luzPrincipal.cutoffCos = std::cos(cutoffDeg * Luz::kPi / 180.0); needRestart = true; }
+            if (IsKeyPressed(KEY_RIGHT_BRACKET)) { cutoffDeg = std::min(60.0, cutoffDeg + 5.0); luzPrincipal.cutoffCos = std::cos(cutoffDeg * Luz::kPi / 180.0); needRestart = true; }
+        }
+
+
         // renderiza algumas linhas por frame
         for (int k=0; k<ROWS_PER_FRAME && nextRow < PREVIEW_H; k++, nextRow++) {
-            renderRow(nextRow, PREVIEW_W, PREVIEW_H, cam, objetos, luzPontual, luzAmb, selected, rgba);
+            renderRow(nextRow, PREVIEW_W, PREVIEW_H, cam, objetos, luzPrincipal, luzAmb, selected, rgba);
         }
 
         // atualiza textura
@@ -389,8 +411,9 @@ int main() {
         DrawTextureEx(tex, (Vector2){0.0f, 0.0f}, 0.0f, (float)SCALE, (RL_Color){255,255,255,255});
 
         DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor", 10, 10, 18, (RL_Color){255,255,0,255});
-        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, (RL_Color){255,255,255,255});
-        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, (RL_Color){255,255,255,255});
+        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, (RL_Color){255,255,0,255});
+        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, (RL_Color){255,255,0,255});
+        DrawText("L: Change Light", 10, 76, 18, (RL_Color){255,255,0,255});
 
         EndDrawing();
 

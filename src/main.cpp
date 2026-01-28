@@ -191,28 +191,31 @@ int main() {
             }
 
             
-            bool isInShadow = false; 
             if (objHit) {
                 Vec4 P = pHit;
+                
+                bool isInShadow = false; 
+                if (luzPontual.factorAt(P) <= 0.0) {
+                    isInShadow = true;
+                } else {
+                    Vec4 shadowDir = luzPontual.Lvec(P);
+                    double distLimit = luzPontual.maxDistance(P);
 
-                Vec4 toLight = luzPontual.pos - P;
-                double distToLight = toLight.length();
-                Vec4 shadowDir = normalize(toLight);
+                    // empurra um pouquinho para evitar "self-shadow"
+                    Vec4 shadowOrigin = P + shadowDir * 1e-3;
 
-                // empurra um pouquinho para evitar "self-shadow"
-                Vec4 shadowOrigin = P + shadowDir * 1e-3;
+                    for (auto& obj : objetos) {
+                        if (obj.get() == objHit) continue; // evita auto-sombra
 
-                for (auto& obj : objetos) {
-                    if (obj.get() == objHit) continue; // evita auto-sombra
+                        Vec4 pS;
+                        double tS;
+                        Colisao tipoS;
 
-                    Vec4 pS;
-                    double tS;
-                    Colisao tipoS;
-
-                    if (obj->intersect(shadowOrigin, shadowDir, pS, tS, tipoS)) {
-                        if (tS > 1e-6 && tS < distToLight - 1e-4) {
-                            isInShadow = true;
-                            break;
+                        if (obj->intersect(shadowOrigin, shadowDir, pS, tS, tipoS)) {
+                            if (tS > 1e-6 && tS < distLimit - 1e-4) {
+                                isInShadow = true;
+                                break;
+                            }
                         }
                     }
                 }

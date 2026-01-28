@@ -167,7 +167,10 @@ public:
         }
         Vec4 n = normalToWorld(nL);
 
-        Vec4 l = normalize(luz.pos - intersection);  // Vetor para a luz
+        double fatt = luz.factorAt(intersection);
+        Vec4 I_luz = luz.intensidade * fatt;
+        Vec4 l = luz.Lvec(intersection);
+
         Vec4 v = normalize(origem - intersection);   // Vetor para o observador
         double cosNL = std::max(0.0, n.dot(l));      // Cálculo do ângulo de incidência (difuso)
 
@@ -179,8 +182,8 @@ public:
         double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
 
         // Componentes de luz
-        Vec4 Ie = hadamard(luz.intensidade, Ke) * specpow;  // Emissão
-        Vec4 Id = hadamard(luz.intensidade, Kd) * cosNL;    // Difusa
+        Vec4 Id = hadamard(I_luz, Kd) * cosNL;
+        Vec4 Ie = hadamard(I_luz, Ke) * specpow;
         Vec4 Ia = hadamard(luzAmb.intensidade, Ka);          // Ambiente
         Vec4 I = Ia;
         if(!isInShadow){

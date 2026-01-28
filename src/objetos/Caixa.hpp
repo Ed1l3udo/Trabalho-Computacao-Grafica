@@ -95,29 +95,44 @@ public:
     }
 
     Color calculaCor(const Vec4& origemW, const Vec4& intersectionW,
-                     const Luz& luz, const Luz& luzAmb,
-                     const Colisao& /*tipo*/, bool isInShadow) const override
+                 const Luz& luz, const Luz& luzAmb,
+                 const Colisao& /*tipo*/, bool isInShadow) const override
     {
-        // normal no mundo via normal matrix
+        // normal no mundo via normal matrix (você já salva lastNormalLocal no intersectLocal)
         Vec4 n = normalToWorld(lastNormalLocal);
 
+        // Ambiente
         Vec4 Ia = hadamard(luzAmb.intensidade, Ka);
 
         Vec4 I = Ia;
+
         if (!isInShadow) {
-            Vec4 l = normalize(luz.pos - intersectionW);
-            Vec4 v = normalize(origemW - intersectionW);
+            // Spot: se o ponto estiver fora do cone, não recebe luz direta
+            double fatt = luz.factorAt(intersectionW);
+            if (fatt > 0.0) {
+                // vetor até a luz (ou direção da luz)
+                Vec4 l = luz.Lvec(intersectionW);
 
-            double cosNL = std::max(0.0, n.dot(l));
+                // intensidade efetiva dessa luz (aplica fator do spot)
+                Vec4 I_luz = luz.intensidade * fatt;
 
-            Vec4 r = normalize(n * (2.0 * cosNL) - l);
-            double cosVR = std::max(0.0, v.dot(r));
-            double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
+                // view vector
+                Vec4 v = normalize(origemW - intersectionW);
 
-            Vec4 Id = hadamard(luz.intensidade, Kd) * cosNL;
-            Vec4 Is = hadamard(luz.intensidade, Ke) * specpow; // Ke = especular (seu “Ks”)
+                // difuso
+                double cosNL = std::max(0.0, n.dot(l));
 
-            I = Ia + Id + Is;
+                // reflexão para especular
+                Vec4 r = normalize(n * (2.0 * cosNL) - l);
+                double cosVR = std::max(0.0, v.dot(r));
+                double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
+
+                Vec4 Id = hadamard(I_luz, Kd) * cosNL;
+                Vec4 Is = hadamard(I_luz, Ke) * specpow; // Ke = especular (seu Ks)
+
+                I = Ia + Id + Is;
+            }
+            // se fatt==0, fica só ambiente (Ia)
         }
 
         auto sat01 = [](double x){ return std::max(0.0, std::min(1.0, x)); };
@@ -125,6 +140,7 @@ public:
         int G = (int)(sat01(I.y) * 255.0);
         int B = (int)(sat01(I.z) * 255.0);
 
-        return Color(R,G,B);
+        return Color(R, G, B);
     }
+
 };
