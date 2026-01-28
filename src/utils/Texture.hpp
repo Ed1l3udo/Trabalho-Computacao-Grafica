@@ -10,14 +10,14 @@
 #include "Vec4.hpp"
 
 // Interface de textura: retorna cor em [0..1]
-class Texture {
+class RTTexture {
 public:
-    virtual ~Texture() = default;
+    virtual ~RTTexture() = default;
     virtual Vec4 sample(double u, double v) const = 0;
 };
 
 // Checkerboard procedural (não precisa arquivo)
-class CheckerTexture : public Texture {
+class CheckerTexture : public RTTexture {
 public:
     Vec4 c1, c2;      // cores em [0..1], w=0
     int freqU, freqV; // quantos quadrados
@@ -38,7 +38,7 @@ public:
 };
 
 // Textura por imagem PPM (P3 ou P6) - opcional, caso o professor exija "imagem"
-class ImageTexturePPM : public Texture {
+class ImageTexturePPM : public RTTexture {
 public:
     int w = 0, h = 0;
     std::vector<Vec4> px; // RGB em [0..1], w=0

@@ -78,35 +78,35 @@ int main() {
 
     esfera->setTexture(texGlobo);
 
-    // auto cilindro = std::make_unique<Cilindro>(
-    //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-    //     Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
-    // cilindro->setTransform(Mat4::translation(9, 1, 8) * Mat4::rotateZ(0.3)); // translação + rotação
+    auto cilindro = std::make_unique<Cilindro>(
+        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+        Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
+    cilindro->setTransform(Mat4::translation(9, 1, 8) * Mat4::rotateZ(0.3)); // translação + rotação
 
-    // auto cone = std::make_unique<Cone>(
-    //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-    //     Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
-    // cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
+    auto cone = std::make_unique<Cone>(
+        Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
+        Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
+    cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
     
     objetos.push_back(std::move(esfera));
-    // objetos.push_back(std::move(cilindro));
-    // objetos.push_back(std::move(cone));
+    objetos.push_back(std::move(cilindro));
+    objetos.push_back(std::move(cone));
 
-    // auto chao = std::make_unique<Caixa>(
-    //     Vec4(0,0,0,1), Vec4(1,1,1,1),
-    //     Vec4(0.2,0.2,0.2,0),   // Ke
-    //     Vec4(0.7,0.7,0.7,0),   // Kd
-    //     Vec4(0.08,0.08,0.08,0),// Ka
-    //     30.0
-    // );
+    auto chao = std::make_unique<Caixa>(
+        Vec4(0,0,0,1), Vec4(1,1,1,1),
+        Vec4(0.2,0.2,0.2,0),   // Ke
+        Vec4(0.7,0.7,0.7,0),   // Kd
+        Vec4(0.08,0.08,0.08,0),// Ka
+        30.0
+    );
 
-    // // transforma um cubo unitário em uma “laje” grande
-    // chao->setTransform(
-    //     Mat4::translation(1, 0.5, 1) *   // coloca no mundo
-    //     Mat4::scale(12, 0.2, 12)         // vira piso
-    // );
+    // transforma um cubo unitário em uma “laje” grande
+    chao->setTransform(
+        Mat4::translation(1, 0.5, 1) *   // coloca no mundo
+        Mat4::scale(12, 0.2, 12)         // vira piso
+    );
 
-    // objetos.push_back(std::move(chao));
+    objetos.push_back(std::move(chao));
 
     auto teclado = std::make_unique<Malha>(
         "models/teclado.obj",

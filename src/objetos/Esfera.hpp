@@ -52,9 +52,9 @@ Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, c
     Vec4 nL = normalize(pL - centro);              // normal no espaço local
     Vec4 n  = normalToWorld(nL);                   // normal no mundo (inv-transpose) // Vetor normal da superfície
     // --- UV esférico (0..1) ---
-    const double PI = 3.14159265358979323846;
-    double u = 0.5 + std::atan2(nL.z, nL.x) / (2.0 * PI);
-    double vv = 0.5 - std::asin(nL.y) / PI; // usei vv pra não conflitar com o seu Vec4 v
+    const double kPI = 3.14159265358979323846;
+    double u = 0.5 + std::atan2(nL.z, nL.x) / (2.0 * kPI);
+    double vv = 0.5 - std::asin(nL.y) / kPI; // usei vv pra não conflitar com o seu Vec4 v
 
     Vec4 texColor(1,1,1,0);
     if (tex) texColor = tex->sample(u, vv);
@@ -91,8 +91,8 @@ Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, c
     return Color(R, G, B);  // Retorna a cor calculada
 }
 
-    std::shared_ptr<Texture> tex = nullptr;
-    void setTexture(std::shared_ptr<Texture> t) { tex = std::move(t); }
+    std::shared_ptr<RTTexture> tex = nullptr;
+    void setTexture(std::shared_ptr<RTTexture> t) { tex = std::move(t); }
 
 };
 
