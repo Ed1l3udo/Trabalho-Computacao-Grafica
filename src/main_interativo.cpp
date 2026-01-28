@@ -25,13 +25,35 @@
 #include "Cone.hpp"
 #include "Malha.hpp"
 #include "Mat4.hpp"
-// #include "Texture.hpp"
+#include "Texture.hpp"
 
 // ------------------- Config -------------------
 static const int PREVIEW_W = 240;   // preview rápido
 static const int PREVIEW_H = 240;
 static const int SCALE     = 3;     // janela = PREVIEW * SCALE
 static const int ROWS_PER_FRAME = 16; // render progressivo
+
+static void setPreset1Point(Camera& cam) {
+    // alinhada com os eixos do cenário (1 ponto)
+    cam.eye = Vec4{6, 6, 2, 1};
+    cam.at  = Vec4{6, 2, 8, 1};
+    cam.up  = Vec4{0, 1, 0, 0};
+}
+
+static void setPreset2Point(Camera& cam) {
+    // yaw (gira em Y) -> 2 pontos
+    cam.eye = Vec4{10, 6, 2, 1};
+    cam.at  = Vec4{6, 2, 8, 1};
+    cam.up  = Vec4{0, 1, 0, 0};
+}
+
+static void setPreset3Point(Camera& cam) {
+    // yaw + pitch (olha de cima/diagonal) -> 3 pontos
+    cam.eye = Vec4{10, 12, 2, 1};
+    cam.at  = Vec4{6, 2, 8, 1};
+    cam.up  = Vec4{0, 1, 0, 0};
+}
+
 
 // Converte seu Color para RGBA
 static inline void putPixelRGBA(std::vector<unsigned char>& rgba, int x, int y, int w, const Color& c) {
@@ -228,13 +250,13 @@ int main() {
         Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0);
     esfera->setTransform(Mat4::translation(6, 2, 8)); // coloca no mundo (primeiro octante)
 
-    // auto texGlobo = std::make_shared<CheckerTexture>(
-    //     Vec4{0.1, 0.4, 1.0, 0},   // azul
-    //     Vec4{0.9, 0.9, 0.9, 0},   // branco
-    //     24, 12                   // quantidade de quadrados
-    // );
+    auto texGlobo = std::make_shared<CheckerTexture>(
+        Vec4{0.1, 0.4, 1.0, 0},   // azul
+        Vec4{0.9, 0.9, 0.9, 0},   // branco
+        24, 12                   // quantidade de quadrados
+    );
 
-    // esfera->setTexture(texGlobo);
+    esfera->setTexture(texGlobo);
 
     auto cilindro = std::make_unique<Cilindro>(
         Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
@@ -338,6 +360,21 @@ int main() {
             needRestart = false;
         }
 
+        // Troca de projeção
+        if (IsKeyPressed(KEY_ONE))  { cam.proj = Projecao::Perspectiva;  needRestart = true; }
+        if (IsKeyPressed(KEY_TWO))  { cam.proj = Projecao::Ortografica; needRestart = true; }
+        if (IsKeyPressed(KEY_THREE)){ cam.proj = Projecao::Obliqua;     needRestart = true; }
+
+        // Ajustes da oblíqua (opcional, mas ótimo para demonstrar)
+        // Z = cabinet (0.5), X = cavalier (1.0)
+        if (IsKeyPressed(KEY_Z)) { cam.obliqL = 0.5; needRestart = true; }
+        if (IsKeyPressed(KEY_X)) { cam.obliqL = 1.0; needRestart = true; }
+
+        // Pontos de fuga
+        if (IsKeyPressed(KEY_F1)) { setPreset1Point(cam); needRestart = true; }
+        if (IsKeyPressed(KEY_F2)) { setPreset2Point(cam); needRestart = true; }
+        if (IsKeyPressed(KEY_F3)) { setPreset3Point(cam); needRestart = true; }
+
         // renderiza algumas linhas por frame
         for (int k=0; k<ROWS_PER_FRAME && nextRow < PREVIEW_H; k++, nextRow++) {
             renderRow(nextRow, PREVIEW_W, PREVIEW_H, cam, objetos, luzPontual, luzAmb, selected, rgba);
@@ -351,8 +388,10 @@ int main() {
 
         DrawTextureEx(tex, (Vector2){0.0f, 0.0f}, 0.0f, (float)SCALE, (RL_Color){255,255,255,255});
 
-        DrawText("WASD: move | RMB: olhar | Wheel: zoom | Click: pick | ESC: cursor",
-                10, 10, 18, (RL_Color){255,255,0,255});
+        DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor", 10, 10, 18, (RL_Color){255,255,0,255});
+        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, (RL_Color){255,255,255,255});
+        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, (RL_Color){255,255,255,255});
+
         EndDrawing();
 
     }
