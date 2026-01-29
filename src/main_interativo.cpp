@@ -326,8 +326,6 @@ static bool updateCameraFreeFly(Camera& cam, float dt) {
         // pitch em torno do right
         float pitch = -d.y * sens;
 
-        // rotaciona o forward (usando sua Mat4 rotateAxisAngle seria mais elegante,
-        // mas aqui fica simples: duas rotações sequenciais com Rodrigues)
         auto rotAxis = [](const Vec4& v, const Vec4& axisRaw, double rad){
             Vec4 axis = normalize(axisRaw);
             double c = std::cos(rad), s = std::sin(rad);
@@ -366,15 +364,14 @@ int main() {
 
     
     std::vector<std::unique_ptr<Objeto>> objetos;
-    // TODO: adicione seus objetos aqui (esfera/cilindro/cone/caixa/malha etc.)
 
     // CHÃO
 
     Vec4 KeFloor{0.02,0.02,0.02,0};
-    Vec4 KdFloor{0.35,0.30,0.25,0}; // “piso” mais escuro
+    Vec4 KdFloor{0.35,0.30,0.25,0}; 
     Vec4 KaFloor{0.10,0.08,0.06,0};
     double mFloor = 15.0;
-        // Dimensões do ambiente (tudo positivo)
+    // Dimensões do ambiente 
     double roomX = 14.0;   // tamanho em X
     double roomZ = 12.0;   // tamanho em Z
     double roomH = 6.0;    // altura (Y)
@@ -395,7 +392,7 @@ int main() {
         objetos.push_back(std::move(floor));
     }
     
-    // -------- MESA (tampo + 4 pernas) --------
+    //  MESA (tampo + 4 pernas) 
     
     // Materiais
     Vec4 KeMadeira{0.05, 0.05, 0.05, 0};
@@ -408,7 +405,7 @@ int main() {
     Vec4 KaPreto{0.02, 0.02, 0.02, 0};
     double mPreto = 80.0;
     
-    // Dimensões da mesa (ajuste à vontade)
+    // Dimensões da mesa
     double mesaX = 10.0;     // comprimento em X
     double mesaZ = 6.0;      // largura em Z
     double tampoEsp = 0.25;  // espessura do tampo
@@ -416,7 +413,7 @@ int main() {
     
     double pernaEsp = 0.20;  // espessura da perna (quadrada)
     
-    // Posição base da mesa (canto “próximo” no mundo)
+    // Posição base da mesa
     double x0 = 1.0;
     double z0 = 3.0;
     
@@ -461,7 +458,7 @@ int main() {
 
     Vec4 sceneTarget{ x0 + mesaX*0.5, altura + tampoEsp + 0.8, z0 + mesaZ*0.5, 1 };
 
-    // ---------------- LAPIS (cilindro + cone) ----------------
+    // LAPIS (cilindro + cone) 
 
     // Materiais
     Vec4 KePencil{0.15,0.15,0.15,0};
@@ -476,7 +473,7 @@ int main() {
 
     // Posição do lápis (em cima da mesa)
     double px = 8.5;
-    double py = (altura + tampoEsp) + 0.03;  // um tiquinho acima do tampo
+    double py = (altura + tampoEsp) + 0.03;  // um pouco acima do tampo
     double pz = 4;
 
     // Dimensões
@@ -524,7 +521,7 @@ int main() {
         objetos.push_back(std::move(ponta));
     }
 
-    // ---------------- BORRACHA (caixinha branca) + ESPELHO em x = centro da mesa ----------------
+    // BORRACHA (caixinha branca) + ESPELHO em x = centro da mesa 
 
     // plano de espelho x = centro da mesa
     double xCenterMesa = x0 + mesaX * 0.5;
@@ -555,7 +552,7 @@ int main() {
     double erCY = (altura + tampoEsp) + 0.02 + erH*0.5;
     double erCZ = z0 + 1.6;
 
-    // ✅ transforma unit cube (0..1) -> centra no 0 -> escala -> rotaciona -> coloca no centro
+    // transforma unit cube (0..1) -> centra no 0 -> escala -> rotaciona -> coloca no centro
     Mat4 Ter =
         Mat4::translation(erCX, erCY, erCZ) *
         Rer *
@@ -587,7 +584,7 @@ int main() {
 
 
     
-    // ---------------- MOVA GLOBE (4 cilindros + esfera) ----------------
+    // MOVA GLOBE (4 cilindros + esfera) 
     
     // Material metal (bem diferente da madeira e do notebook)
     Vec4 KeMetal{0.60, 0.60, 0.60, 0};
@@ -595,7 +592,7 @@ int main() {
     Vec4 KaMetal{0.05, 0.05, 0.05, 0};
     double mMetal = 140.0;
     
-    // Posição do conjunto em cima da mesa (ajuste fino depois)
+    // Posição do conjunto em cima da mesa
     double tableTopY = altura + tampoEsp;     // topo do tampo
     double cx = 2;                          // centro do globo (X)
     double cz = 8;                          // centro do globo (Z)
@@ -637,7 +634,7 @@ int main() {
     rodL = std::sqrt(rFoot*rFoot + vertical*vertical);
     globeCy = (tableTopY + baseH) + vertical;
     
-    // ---------- Cilindro base (achatado) ----------
+    //  Cilindro base (achatado)
     {
         auto base = std::make_unique<Cilindro>(
             Vec4(0,0,0,1), Vec4(0,1,0,0), 1, 1,
@@ -653,7 +650,7 @@ int main() {
         objetos.push_back(std::move(base));
     }
     
-    // ---------- 3 hastes inclinadas ----------
+    // 3 hastes inclinadas 
     for (int k = 0; k < 3; k++) {
         double phi = (2.0 * 3.14159265358979323846 / 3.0) * k;
         
@@ -702,7 +699,7 @@ int main() {
         objetos.push_back(std::move(haste));
     }
     
-    // ---------- Globo (esfera) ----------
+    //  Globo (esfera) 
     {
         auto globo = std::make_unique<Esfera>(
             Vec4(0,0,0,1), globeR,
@@ -724,7 +721,7 @@ int main() {
         objetos.push_back(std::move(globo));
     }
 
-    // ---------------- ABAJUR (base + haste + cupula + lampada opcional) ----------------
+    //  ABAJUR (base + haste + cupula + lampada)
     
     // Materiais (bem distintos)
     Vec4 KeMetalLamp{0.50, 0.50, 0.50, 0};
@@ -757,11 +754,11 @@ int main() {
     double shadeR = 1.10;
     double shadeH = 1.05;
     
-    // Inclinação do abajur (eixo arbitrário via quatérnio) — opcional
+    // Inclinação do abajur (via quatérnio)
     double tilt = 0.25; // rad (~14°)
     Mat4 Rtilt = Mat4::identity();
     {
-        // inclina em torno de um eixo “diagonal” (arbitrário)
+        // inclina em torno de um eixo “diagonal”
         RTQuat q = RTQuat::fromAxisAngle(Vec4{0,0,1,0}, -tilt); // inclina para frente
         Rtilt = q.toMat4();
     }
@@ -799,16 +796,12 @@ int main() {
     }
     
     // 3) Cúpula (cone)
-    // Seu cone é: base em centroBase e ápice em centroBase + dir*altura (dir para cima)
-    // Então ele fica largo embaixo e pontudo em cima (ok como “cúpula” simplificada)
     {
         auto cupula = std::make_unique<Cone>(
             Vec4(0,0,0,1), Vec4(0,1,0,0), 1, 1,
             KeCupula, KdCupula, KaCupula, mCupula
         );
         
-        // posiciona a base da cúpula perto do topo da haste
-        // (um pouco abaixo do topo para parecer encaixada)
         double cupulaBaseY = tableTopYAbajur + baseH + stemH - 0.35;
         
         cupula->setTransform(
@@ -820,7 +813,7 @@ int main() {
         objetos.push_back(std::move(cupula));
     }
     
-    // 4) Lâmpada (esfera pequena) — opcional, mas dá “vida”
+    // 4) Lâmpada (esfera pequena)
     {
         auto lampada = std::make_unique<Esfera>(
             Vec4(0,0,0,1), 0.20,
@@ -852,67 +845,6 @@ int main() {
     
     objetos.push_back(std::move(notebook));
     
-    // auto esfera = std::make_unique<Esfera>(
-        //     Vec4(0, 0, 0, 1), 1,
-        //     Vec4(0.5, 0.6, 0, 0), Vec4(1, 0.8, 0.7, 0), Vec4(0.9, 0.3, 0.4, 0), 50.0);
-        // esfera->setTransform(Mat4::translation(6, 2, 8)); // coloca no mundo (primeiro octante)
-        
-        // auto texGlobo = std::make_shared<CheckerTexture>(
-            //     Vec4{0.1, 0.4, 1.0, 0},   // azul
-            //     Vec4{0.9, 0.9, 0.9, 0},   // branco
-            //     24, 12                   // quantidade de quadrados
-            // );
-            
-            // esfera->setTexture(texGlobo);
-            
-            // auto cilindro = std::make_unique<Cilindro>(
-                //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-                //     Vec4(0, 1, 0, 0), Vec4(0.5, 0.8, 0.2, 0), Vec4(0.7, 0.5, 0.8, 0), 50.0);
-                //     RTQuat q = RTQuat::fromAxisAngle(Vec4{1,1,0,0}, 0.6); // eixo arbitrário (1,1,0), 0.6 rad
-                //     Mat4 Rq = q.toMat4();
-                
-                //     cilindro->setTransform(Mat4::translation(9, 1, 8) * Rq); // translação + rotação
-                
-                // auto cone = std::make_unique<Cone>(
-                    //     Vec4(0, 0, 0, 1), Vec4(0, 1, 0, 0), 1, 3,
-                    //     Vec4(0, 0, 1, 0), Vec4(0.7, 0.8, 0.8, 0), Vec4(0.5, 0.7, 0.8, 0), 50.0);
-                    // cone->setTransform(Mat4::translation(3, 1, 8) * Mat4::shear(0.2,0, 0,0, 0,0)); // cisalhamento exemplo
-                    
-                    // objetos.push_back(std::move(esfera));
-                    // objetos.push_back(std::move(cilindro));
-                    // objetos.push_back(std::move(cone));
-                    
-                    // auto chao = std::make_unique<Caixa>(
-                        //     Vec4(0,0,0,1), Vec4(1,1,1,1),
-                        //     Vec4(0.2,0.2,0.2,0),   // Ke
-                        //     Vec4(0.7,0.7,0.7,0),   // Kd
-                        //     Vec4(0.08,0.08,0.08,0),// Ka
-                        //     30.0
-                        // );
-                        
-    // // transforma um cubo unitário em uma “laje” grande
-    // chao->setTransform(
-        //     Mat4::translation(1, 0.5, 1) *   // coloca no mundo
-        //     Mat4::scale(12, 0.2, 12)         // vira piso
-        // );
-        
-        // objetos.push_back(std::move(chao));
-        
-        
-        // Mat4 espelho = Mat4::mirrorPlane(Vec4(6,0,0,1), Vec4(1,0,0,0));
-        
-        // // objeto original
-        // auto caixa1 = std::make_unique<Caixa>(Vec4(0,0,0,1), Vec4(1,1,1,1), Vec4(0.5, 1, 0, 0), Vec4(0.7, 0.4, 0.2, 0), Vec4(0.7, 0.2, 0.9, 0), 30.0);
-        // Mat4 T1 = Mat4::translation(1, 1, 8) * Mat4::scale(1.5, 1.0, 1.0);
-        // caixa1->setTransform(T1);
-        // objetos.push_back(std::move(caixa1));
-        
-        // // objeto espelhado
-        // auto caixa2 = std::make_unique<Caixa>(Vec4(0,0,0,1), Vec4(1,1,1,1), Vec4(0.5, 1, 0, 0), Vec4(0.7, 0.4, 0.2, 0), Vec4(0.7, 0.2, 0.9, 0), 30.0);
-        // Mat4 T2 = espelho * T1;
-        // caixa2->setTransform(T2);
-        // objetos.push_back(std::move(caixa2));
-        
         Luz luzPontual(Vec4{10, 10, 2, 1}, Vec4{1,1,1,0});
         Luz luzAmb(Vec4{0.2,0.2,0.2,0});
         Luz luzDir  = Luz::Direcional(Vec4{-1,-1,0,0}, Vec4{1,1,1,0});
@@ -930,7 +862,7 @@ int main() {
         InitWindow(PREVIEW_W * SCALE, PREVIEW_H * SCALE, "Ray Casting Preview + Picking");
         SetExitKey(KEY_NULL);  // desativa ESC como tecla de fechar
         SetTargetFPS(60);
-        DisableCursor(); // opcional: remove cursor para mouse-look (re-habilite com ESC)
+        DisableCursor(); 
         
         // buffer RGBA
         std::vector<unsigned char> rgba(PREVIEW_W * PREVIEW_H * 4, 0);
