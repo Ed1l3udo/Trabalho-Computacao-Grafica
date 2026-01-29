@@ -78,11 +78,14 @@ public:
         auto tri = tris[bestTri];
         Vec4 e1 = vertices[tri[1]] - vertices[tri[0]];
         Vec4 e2 = vertices[tri[2]] - vertices[tri[0]];
-        Vec4 nL = normalize(e1.cross(e2)); // w=0 pelo cross
+        Vec4 nL = normalize(e1.cross(e2));   // pode manter assim
+
+        // ✅ Garante que a normal aponte "para fora" em relação ao raio (para a câmera)
+        if (nL.dot(dirL) > 0.0) nL = nL * -1.0;
 
         // guarda para o shading
+        lastNormalLocal = nL;   
         lastTri = bestTri;
-        lastNormalLocal = nL;
 
         (void)bestU; (void)bestV; // futuro: usar para interpolar UV/normais
         return true;
