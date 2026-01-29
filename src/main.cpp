@@ -476,23 +476,20 @@ int main() {
     {
         auto globo = std::make_unique<Esfera>(
             Vec4(0,0,0,1), globeR,
-            Vec4(0.30,0.30,0.30,0),  // Ke (spec) do globo
-            Vec4(1.00,1.00,1.00,0),  // Kd (vai ser modulada pela textura)
-            Vec4(0.5,0.5,0.5,0),  // Ka
+            Vec4(0.10,0.10,0.10,0),  // Ke (spec) do globo
+            Vec4(0.7,0.7,0.7,0),  // Kd (vai ser modulada pela textura)
+            Vec4(0.2,0.2,0.2,0),  // Ka
             80.0
         );
         
-        // textura (se você quiser reutilizar a mesma checker do seu globo antigo)
-        auto texGlobo = std::make_shared<CheckerTexture>(
-            Vec4{0.1, 0.4, 1.0, 0},
-            Vec4{0.9, 0.9, 0.9, 0},
-            24, 12
-        );
+        // textura 
+        auto texGlobo =std::make_shared<ImageTexturePPM>("models/flat_earth03.ppm");
         globo->setTexture(texGlobo);
         
         globo->setTransform(Mat4::translation(globeCenter.x, globeCenter.y-1.21, globeCenter.z));
         objetos.push_back(std::move(globo));
     }
+        
 
     // ---------------- ABAJUR ----------------
     Vec4 KeMetalLamp{0.50, 0.50, 0.50, 0};

@@ -78,7 +78,7 @@ Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, c
     double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
     
     // Componentes de luz
-    Vec4 Id = hadamard(I_luz, Kd) * cosNL;
+    Vec4 Id = hadamard(I_luz, KdTex) * cosNL;
     Vec4 Ie = hadamard(I_luz, Ke) * specpow; 
     Vec4 Ia = hadamard(luzAmb.intensidade, KaTex);          // Ambiente
     Vec4 I = Ia;
