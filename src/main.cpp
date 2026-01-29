@@ -218,6 +218,146 @@ int main() {
         objetos.push_back(std::move(borracha2));
     }
 
+    //  PILHA DE PAPÉIS (caixa branca com CISALHAMENTO) 
+
+    // material branco (papel)
+    Vec4 KePaper{0.02,0.02,0.02,0};
+    Vec4 KdPaper{0.95,0.95,0.95,0};
+    Vec4 KaPaper{0.25,0.25,0.25,0};
+    double mPaper = 8.0;
+
+    // dimensões da pilha
+    double papL = 1.4;  // comprimento em X
+    double papH = 0.18;  // altura em Y
+    double papW = 2;  // largura em Z
+
+    // posição (em cima da mesa)
+    double papCX = x0 + 3.2;
+    double papCY = altura + tampoEsp + 0.02 + papH*0.5;
+    double papCZ = z0 + 4.6;
+
+    // cisalhamento: x += k*y (empurra topo pro lado +X)
+    double kShear = 0.8;  
+
+    Mat4 Shear = Mat4::shear(kShear, 0,   // shXY, shXZ
+                            0,      0,   // shYX, shYZ
+                            0,      0);  // shZX, shZY
+
+    
+    double yaw = 10.0 * 3.14159265358979323846 / 180.0;
+    Mat4 Ry = Mat4::rotateY(yaw);
+
+    // transforma: centraliza -> escala -> cisalha -> gira -> coloca
+    Mat4 Tpaper =
+        Mat4::translation(papCX, papCY, papCZ) *
+        Ry *
+        Shear *
+        Mat4::scale(papL, papH, papW) *
+        Mat4::translation(-0.5, -0.5, -0.5);
+
+    {
+        auto papeis = std::make_unique<Caixa>(
+            Vec4(0,0,0,1), Vec4(1,1,1,1),
+            KePaper, KdPaper, KaPaper, mPaper
+        );
+
+        papeis->setTransform(Tpaper);
+        objetos.push_back(std::move(papeis));
+    }
+
+    //  PATINHO (malha) + BICO (cone separado) 
+    const double PI = 3.14159265358979323846;
+
+    // ajuste posição em cima da mesa
+    double tableY = altura + tampoEsp;
+
+    // escala (um pouco menor do que antes)
+    double duckS = 0.28;
+
+    // limites aproximados do patinho.obj (do arquivo que eu te mandei)
+    Vec4 duckMin{0.0, 0.0, 0.0, 1};
+    Vec4 duckMax{3.70, 1.70, 1.20, 1};
+    Vec4 duckCenterLocal{
+        (duckMin.x + duckMax.x)*0.5,
+        (duckMin.y + duckMax.y)*0.5,
+        (duckMin.z + duckMax.z)*0.5,
+        1
+    };
+
+    double duckHLocal = duckMax.y - duckMin.y;
+
+    // posição do centro do pato no mundo (em cima da mesa)
+    double duckCX = x0 + 6.5;
+    double duckCZ = z0 + 4.8;
+    double duckCY = tableY + 0.02 + (duckHLocal * duckS)*0.5;
+
+    // rotação: +X -> -Z (fica de frente pro eixo Z negativo / câmera)
+    Mat4 Rduck = Mat4::rotateY(+PI/2.0);
+
+    // matriz “base” do pato (centra -> escala -> gira -> coloca no mundo)
+    Mat4 Mduck =
+        Mat4::translation(duckCX, duckCY, duckCZ) *
+        Rduck *
+        Mat4::scale(duckS, duckS, duckS) *
+        Mat4::translation(-duckCenterLocal.x, -duckCenterLocal.y, -duckCenterLocal.z);
+
+    // material do pato (amarelo borracha)
+    Vec4 KeDuck{0.08,0.08,0.08,0};
+    Vec4 KdDuck{0.95,0.85,0.15,0};
+    Vec4 KaDuck{0.25,0.22,0.06,0};
+    double mDuck = 25.0;
+
+    // 1) Malha do pato
+    {
+        auto patinho = std::make_unique<Malha>(
+            "models/patinho.obj",
+            KeDuck, KdDuck, KaDuck, mDuck
+        );
+
+        patinho->setTransform(Mduck);
+        objetos.push_back(std::move(patinho));
+    }
+
+    // 2) Bico laranja (cone separado)
+    // Base do bico no OBJ original (aprox): x=3.10, y~1.20, z~0.60
+    Vec4 beakBaseLocal{3.10, 1.20, 0.60, 1};
+
+    // dimensões do bico em unidades LOCAIS do OBJ (antes da escala duckS)
+    double beakLen = 0.70;   // comprimento
+    double beakR   = 0.20;   // raio da base
+
+    // material laranja
+    Vec4 KeBeak{0.05,0.05,0.05,0};
+    Vec4 KdBeak{1.00,0.45,0.10,0};
+    Vec4 KaBeak{0.25,0.12,0.04,0};
+    double mBeak = 15.0;
+
+    // cone nasce no +Y -> queremos que ele aponte no +X local do pato,
+    // e depois a rotação do pato leva +X -> -Z (frente da câmera)
+    Mat4 RbeakLocal = Mat4::rotateZ(-PI/2.0);
+
+    {
+        auto bico = std::make_unique<Cone>(
+            Vec4(0,0,0,1), Vec4(0,1,0,0), 1, 1,
+            KeBeak, KdBeak, KaBeak, mBeak
+        );
+
+        Mat4 Mbeak =
+            // mesma base do pato (centra/escala/roda/coloca)
+            Mat4::translation(duckCX, duckCY, duckCZ) *
+            Rduck *
+            Mat4::scale(duckS, duckS, duckS) *
+            Mat4::translation(-duckCenterLocal.x, -duckCenterLocal.y, -duckCenterLocal.z) *
+            // posiciona no local do bico
+            Mat4::translation(beakBaseLocal.x, beakBaseLocal.y, beakBaseLocal.z) *
+            RbeakLocal *
+            Mat4::scale(beakR, beakLen, beakR);
+
+        bico->setTransform(Mbeak);
+        objetos.push_back(std::move(bico));
+    }
+
+
     // ---------------- MOVA GLOBE (simples) ----------------
     // Material metal (bem diferente da madeira e do notebook)
     Vec4 KeMetal{0.60, 0.60, 0.60, 0};

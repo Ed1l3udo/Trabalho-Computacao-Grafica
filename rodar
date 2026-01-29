@@ -1,1 +1,4 @@
 g++ -std=c++17 -I./src/utils -I./src/objetos src/main.cpp -o app
+
+
+g++ -std=c++17 -O2   src/main_interativo.cpp   rcore.o rshapes.o rtextures.o rtext.o rmodels.o utils.o raudio.o rglfw.o   -Iexternal/raylib/src   -Iexternal/raylib/src/external/glfw/include   -Iexternal/raylib/src/external/glfw/deps/mingw   -Isrc -Isrc/utils -Isrc/objetos   -o app_interativo.exe   -lopengl32 -lgdi32 -lwinmm -lole32 -luser32 -lshell32
