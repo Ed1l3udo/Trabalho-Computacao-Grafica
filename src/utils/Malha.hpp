@@ -4,6 +4,7 @@
 #include <string>
 #include <limits>
 #include <algorithm>
+#include <cmath>
 
 #include "Objeto.hpp"
 #include "Vec4.hpp"
@@ -102,18 +103,22 @@ public:
 
         Vec4 I = Ia;
         if (!isInShadow) {
-            Vec4 l = normalize(luz.pos - intersectionW);
-            Vec4 v = normalize(origemW - intersectionW);
+            const double fatt = luz.factorAt(intersectionW);
+            if (std::isfinite(fatt) && fatt > 0.0) {
+                Vec4 l = luz.Lvec(intersectionW);
+                Vec4 v = normalize(origemW - intersectionW);
 
-            double cosNL = std::max(0.0, n.dot(l));
+                double cosNL = std::max(0.0, n.dot(l));
 
-            Vec4 r = normalize(n * (2.0 * cosNL) - l);
-            double cosVR = std::max(0.0, v.dot(r));
-            double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
+                Vec4 r = normalize(n * (2.0 * cosNL) - l);
+                double cosVR = std::max(0.0, v.dot(r));
+                double specpow = (cosVR > 0.0) ? std::pow(cosVR, m) : 0.0;
 
-            Vec4 Id = hadamard(luz.intensidade, Kd) * cosNL;
-            Vec4 Is = hadamard(luz.intensidade, Ke) * specpow; // seu Ke = “Ks”
-            I = Ia + Id + Is;
+                Vec4 I_luz = luz.intensidade * fatt;
+                Vec4 Id = hadamard(I_luz, Kd) * cosNL;
+                Vec4 Is = hadamard(I_luz, Ke) * specpow; // seu Ke = “Ks”
+                I = Ia + Id + Is;
+            }
         }
 
         auto sat01 = [](double x){ return std::max(0.0, std::min(1.0, x)); };
