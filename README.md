@@ -1,6 +1,8 @@
 # Computer Graphics Ray Tracer
 
-![Offline render of the scene](docs/images/render.png)
+<p align="center">
+  <img src="docs/images/render.png" alt="Render">
+</p>
 
 A C++17 computer graphics project created for a Computer Graphics course at UFC. It implements its own ray-based offline renderer and an interactive preview of the same scene. Raylib is used for the preview window, input, and presentation layer; it does not perform the ray tracing calculations.
 
