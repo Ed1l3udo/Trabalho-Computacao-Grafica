@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include <exception>
 
 #define Color RL_Color
 #define Camera RL_Camera
@@ -353,6 +354,7 @@ static bool updateCameraFreeFly(Camera& cam, float dt) {
 }
 
 int main() {
+    try {
     // ------------------- Cena: aqui você usa sua cena atual -------------------
     Camera cam;
     cam.eye = Vec4{6, 6, 2, 1};
@@ -1111,4 +1113,8 @@ int main() {
     UnloadTexture(tex);
     CloseWindow();
     return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro fatal ao preparar a cena: " << e.what() << '\n';
+        return 1;
+    }
 }

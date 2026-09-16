@@ -4,6 +4,7 @@
 #include <memory>
 #include <cmath>
 #include <algorithm>
+#include <exception>
 
 #include "Vec4.hpp"
 #include "Color.hpp"
@@ -26,6 +27,7 @@ static inline void saveColor(std::ofstream& img, const Color& cor) {
 }
 
 int main() {
+    try {
     // Imagem
     const int width = 500, height = 500;
 
@@ -659,4 +661,8 @@ int main() {
     img.close();
     std::cout << "Imagem gerada com sucesso (saida.ppm).\n";
     return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro fatal ao preparar a cena: " << e.what() << '\n';
+        return 1;
+    }
 }

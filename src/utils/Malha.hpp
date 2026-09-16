@@ -5,6 +5,7 @@
 #include <limits>
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 #include "Objeto.hpp"
 #include "Vec4.hpp"
@@ -39,8 +40,7 @@ public:
     {
         std::string err;
         if (!loadOBJ_positions_faces(objPath, vertices, tris, &err)) {
-            // se preferir, troque por exception
-            // Aqui deixo vazio; você pode imprimir err na main.
+            throw std::runtime_error(err);
         }
     }
 

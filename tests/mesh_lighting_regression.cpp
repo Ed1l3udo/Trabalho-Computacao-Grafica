@@ -1,4 +1,7 @@
 #include <cmath>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 
 #include "Malha.hpp"
@@ -23,8 +26,29 @@ bool sameColor(const Color& a, const Color& b, int tolerance = 1) {
            std::abs(a.b - b.b) <= tolerance;
 }
 
-Malha makeUpwardFacingMesh() {
-    Malha mesh("__mesh_lighting_regression_unused__.obj",
+class TemporaryTriangleOBJ {
+public:
+    TemporaryTriangleOBJ()
+        : path(std::filesystem::temp_directory_path() /
+               ("mesh_lighting_regression_" +
+                std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".obj")) {
+        std::ofstream out(path);
+        out << "v -1 0 -1\n"
+               "v 1 0 -1\n"
+               "v 0 0 1\n"
+               "f 1 2 3\n";
+    }
+
+    ~TemporaryTriangleOBJ() {
+        std::error_code ignored;
+        std::filesystem::remove(path, ignored);
+    }
+
+    std::filesystem::path path;
+};
+
+Malha makeUpwardFacingMesh(const std::string& objPath) {
+    Malha mesh(objPath,
                Vec4(0, 0, 0, 0), Vec4(1, 1, 1, 0), Vec4(0, 0, 0, 0), 8.0);
     mesh.vertices = {Vec4(-1, 0, -1, 1), Vec4(1, 0, -1, 1), Vec4(0, 0, 1, 1)};
     mesh.tris = {{0, 1, 2}};
@@ -45,7 +69,8 @@ int main() {
     const Vec4 camera(0, 5, 0, 1);
     const Vec4 point(0, 0, 0, 1);
     const Luz ambient(Vec4(0, 0, 0, 0));
-    Malha mesh = makeUpwardFacingMesh();
+    const TemporaryTriangleOBJ triangle;
+    Malha mesh = makeUpwardFacingMesh(triangle.path.string());
 
     const Luz directional = Luz::Direcional(Vec4(0, -5, 0, 0), Vec4(1, 1, 1, 0));
     const Color directionalLit = mesh.calculaCor(camera, point, directional, ambient,
