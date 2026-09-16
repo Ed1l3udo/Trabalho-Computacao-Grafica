@@ -1013,6 +1013,7 @@ int main() {
     // render progressivo
     int nextRow = 0;
     bool needRestart = true;
+    bool interfaceVisible = true;
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
@@ -1022,6 +1023,7 @@ int main() {
             if (IsCursorHidden()) EnableCursor();
             else DisableCursor();
         }
+        if (IsKeyPressed(KEY_TAB)) interfaceVisible = !interfaceVisible;
 
         bool camChanged = updateCameraFreeFly(cam, dt);
         if (camChanged) {
@@ -1098,13 +1100,20 @@ int main() {
 
         DrawTextureEx(tex, Vector2{0.0f, 0.0f}, 0.0f, (float)SCALE, RL_Color{255,255,255,255});
 
-        DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor", 10, 10, 18, RL_Color{255,255,0,255});
-        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, RL_Color{255,255,0,255});
-        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, RL_Color{255,255,0,255});
-        DrawText("L: Change Light", 10, 76, 18, RL_Color{255,255,0,255});
+        if (interfaceVisible) {
+            DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor | TAB hide UI", 10, 10, 18, RL_Color{255,255,0,255});
+            DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, RL_Color{255,255,0,255});
+            DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, RL_Color{255,255,0,255});
+            DrawText("L: Change Light", 10, 76, 18, RL_Color{255,255,0,255});
 
-        drawInfoPanel(selectedInfo, 10, 120);
-        DrawText("Clique no mesmo objeto para cancelar selecao | C: limpar", 10, 96, 18, RL_Color{255,255,0,255});
+            drawInfoPanel(selectedInfo, 10, 120);
+            DrawText("Clique no mesmo objeto para cancelar selecao | C: limpar", 10, 96, 18, RL_Color{255,255,0,255});
+        } else {
+            const char* hint = "TAB: show UI";
+            const int fontSize = 11;
+            DrawText(hint, GetScreenWidth() - MeasureText(hint, fontSize) - 6,
+                     GetScreenHeight() - fontSize - 6, fontSize, RL_Color{220,220,220,190});
+        }
 
         EndDrawing();
 
