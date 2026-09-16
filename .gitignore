@@ -1,0 +1,15 @@
+# Compiled binaries
+*.exe
+/app
+/app_interativo
+
+# Compiled objects
+*.o
+*.obj
+
+# Build directories
+/build/
+cmake-build-*/
+
+# Generated render
+/saida.ppm
