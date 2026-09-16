@@ -1,6 +1,9 @@
 #ifndef CONE_HPP
 #define CONE_HPP
 
+#include <algorithm>
+#include <cmath>
+
 #include "Objeto.hpp"  // Inclui a classe base 'Objeto'
 #include "Vec4.hpp"    // Inclui a classe Vec4 para operações vetoriais
 #include "Color.hpp"   // Inclui a classe Color para representar cores
@@ -30,31 +33,39 @@ public:
     bool intersectLocal(const Vec4& origin, const Vec4& dir, Vec4& intersection, double& t, Colisao& tipoDeColisao) const override
     {
         // Corpo
-        bool encostou_corpo;
+        const double EPS = 1e-6;
+        bool encostou_corpo = false;
         Vec4 intersection_corpo;
 
-        double k = this->raioBase/this->altura;
-        double k2 = k*k;
         Vec4 topo = this->centroBase + this->dir * this->altura;
 
-        Vec4 w = origin - topo;
-        double alfa = dir.dot(this->dir);
-        double beta = w.dot(this->dir);
+        double t_corpo = -1.0;
+        if (std::abs(this->altura) > EPS) {
+            double k = this->raioBase/this->altura;
+            double k2 = k*k;
+            Vec4 w = origin - topo;
+            double alfa = dir.dot(this->dir);
+            double beta = w.dot(this->dir);
 
-        double a = dir.dot(dir) - (1 + k2) * alfa * alfa;
-        double b = (w.dot(dir) - (1 + k2) * alfa * beta) * 2.0;
-        double c = w.dot(w) - (1 + k2) * beta * beta;
-        double delta = b*b - 4.0*a*c;
+            double a = dir.dot(dir) - (1 + k2) * alfa * alfa;
+            double b = (w.dot(dir) - (1 + k2) * alfa * beta) * 2.0;
+            double c = w.dot(w) - (1 + k2) * beta * beta;
+            double delta = b*b - 4.0*a*c;
 
-        if(delta < 0.0)
-        {
-            encostou_corpo = false;
+            if (std::abs(a) > EPS) {
+                if (delta >= -EPS) {
+                    double sqrtD = std::sqrt(std::max(0.0, delta));
+                    double t1 = (-b - sqrtD)/(2.0*a);
+                    double t2 = (-b + sqrtD)/(2.0*a);
+
+                    if (std::isfinite(t1) && t1 > EPS) t_corpo = t1;
+                    if (std::isfinite(t2) && t2 > EPS && (t_corpo < 0.0 || t2 < t_corpo)) t_corpo = t2;
+                }
+            } else if (std::abs(b) > EPS) {
+                double t_linear = -c / b;
+                if (std::isfinite(t_linear) && t_linear > EPS) t_corpo = t_linear;
+            }
         }
-
-        double sqrtD = sqrt(delta);
-        double t1 = (-b - sqrtD)/(2*a);
-        double t2 = (-b + sqrtD)/(2*a);
-        double t_corpo = (t1 > 1e-6) ? t1 : ((t2 > 1e-6) ? t2 : -1.0);
 
         if(t_corpo < 0.0)
         {
@@ -79,9 +90,9 @@ public:
         }
 
         // Base
-        bool encostou_base;
+        bool encostou_base = false;
         Vec4 intersection_planoBase;
-        double t_base;
+        double t_base = 0.0;
         bool encostou_planoBase = intersect_ray_plane(origin, dir, this->centroBase, this->dir, intersection_planoBase, t_base);
 
         if(!encostou_planoBase)
@@ -102,53 +113,25 @@ public:
         }
 
         // Verificando qual mostrar
-        if(encostou_corpo)
-        {
-            if(encostou_base)
-            {
-                if(t_corpo < t_base)
-                {
-                    intersection = intersection_corpo;
-                    t = t_corpo;
-                    tipoDeColisao = Corpo;
-                }
-                else
-                {
-                    intersection = intersection_planoBase;
-                    t = t_base;
-                    tipoDeColisao = Base;
-                }
-            }
-            else
-            {
-                intersection = intersection_corpo;
-                t = t_corpo;
-                tipoDeColisao = Corpo;
-            }
-        }
-        else
-        {
+        if (!encostou_corpo && !encostou_base) return false;
+
+        if (encostou_corpo && (!encostou_base || t_corpo < t_base)) {
+            intersection = intersection_corpo;
+            t = t_corpo;
+            tipoDeColisao = Corpo;
+        } else {
             intersection = intersection_planoBase;
             t = t_base;
             tipoDeColisao = Base;
         }
-
-
-        if(encostou_corpo || encostou_base)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return true;
     }
 
     // Método para calcular a cor com base na iluminação
     Color calculaCor(const Vec4& origem, const Vec4& intersection, const Luz& luz, const Luz& luzAmb, const Colisao& tipoDeColisao, bool isInShadow) const override {
     
         Vec4 pL = toLocalPoint(intersection);
-        Vec4 nL;
+        Vec4 nL(0,0,0,0);
         switch (tipoDeColisao) {
             case Corpo: {
                 Vec4 topo = this->centroBase + this->dir * this->altura;
@@ -164,6 +147,12 @@ public:
                 nL = -(this->dir);
                 break;
             }
+            case Topo:
+                // Cone não possui tampa superior; este valor não é produzido por intersectLocal.
+                break;
+            case Nenhuma:
+                // calculaCor só deve ser chamado após um hit; mantém o resultado finito se o contrato for violado.
+                break;
         }
         Vec4 n = normalToWorld(nL);
 

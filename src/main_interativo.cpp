@@ -185,11 +185,11 @@ static void drawInfoPanel(const std::string& info, int x, int y) {
     int h = (int)lines.size() * lineH + 10;
 
     // fundo semi-transparente
-    DrawRectangle(x-6, y-6, w+12, h+12, (RL_Color){0,0,0,160});
-    DrawRectangleLines(x-6, y-6, w+12, h+12, (RL_Color){255,255,0,200});
+    DrawRectangle(x-6, y-6, w+12, h+12, RL_Color{0,0,0,160});
+    DrawRectangleLines(x-6, y-6, w+12, h+12, RL_Color{255,255,0,200});
 
     for (int i=0;i<(int)lines.size();i++) {
-        DrawText(lines[i].c_str(), x, y + i*lineH, fontSize, (RL_Color){255,255,255,255});
+        DrawText(lines[i].c_str(), x, y + i*lineH, fontSize, RL_Color{255,255,255,255});
     }
 }
 
@@ -374,7 +374,6 @@ int main() {
     // Dimensões do ambiente 
     double roomX = 14.0;   // tamanho em X
     double roomZ = 12.0;   // tamanho em Z
-    double roomH = 6.0;    // altura (Y)
 
     double wallT = 0.20;   // espessura paredes/teto/chão
 
@@ -538,9 +537,6 @@ int main() {
     Mat4 Rer = Mat4::rotateY(yawRad);
 
     // posição base da borracha (em cima do tampo)
-    double erX = x0 + 7.2;                         // ajuste se quiser
-    double erY = altura + tampoEsp + 0.02;         // bem em cima do tampo
-    double erZ = z0 + 1.2;                         // ajuste se quiser
 
     // dimensões (em "metros" do seu mundo)
     double erL = 0.30;   // comprimento (eixo local X)
@@ -1001,12 +997,12 @@ int main() {
         // buffer RGBA
         std::vector<unsigned char> rgba(PREVIEW_W * PREVIEW_H * 4, 0);
         Image img = {
-            .data = rgba.data(),
-            .width = PREVIEW_W,
-            .height = PREVIEW_H,
-            .mipmaps = 1,
-            .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
-    };
+            rgba.data(),
+            PREVIEW_W,
+            PREVIEW_H,
+            1,
+            PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
+        };
     Texture2D tex = LoadTextureFromImage(img);
 
     Objeto* selected = nullptr;
@@ -1096,17 +1092,17 @@ int main() {
         UpdateTexture(tex, rgba.data());
 
         BeginDrawing();
-        ClearBackground((RL_Color){0, 0, 0, 255});
+        ClearBackground(RL_Color{0, 0, 0, 255});
 
-        DrawTextureEx(tex, (Vector2){0.0f, 0.0f}, 0.0f, (float)SCALE, (RL_Color){255,255,255,255});
+        DrawTextureEx(tex, Vector2{0.0f, 0.0f}, 0.0f, (float)SCALE, RL_Color{255,255,255,255});
 
-        DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor", 10, 10, 18, (RL_Color){255,255,0,255});
-        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, (RL_Color){255,255,0,255});
-        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, (RL_Color){255,255,0,255});
-        DrawText("L: Change Light", 10, 76, 18, (RL_Color){255,255,0,255});
+        DrawText("WASD move | RMB look | Wheel zoom | Click pick | ESC cursor", 10, 10, 18, RL_Color{255,255,0,255});
+        DrawText("1 Persp | 2 Ortho | 3 Oblique | Z Cabinet | X Cavalier", 10, 32, 18, RL_Color{255,255,0,255});
+        DrawText("F1 1-point | F2 2-point | F3 3-point", 10, 54, 18, RL_Color{255,255,0,255});
+        DrawText("L: Change Light", 10, 76, 18, RL_Color{255,255,0,255});
 
         drawInfoPanel(selectedInfo, 10, 120);
-        DrawText("Clique no mesmo objeto para cancelar selecao | C: limpar", 10, 96, 18, (RL_Color){255,255,0,255});
+        DrawText("Clique no mesmo objeto para cancelar selecao | C: limpar", 10, 96, 18, RL_Color{255,255,0,255});
 
         EndDrawing();
 
