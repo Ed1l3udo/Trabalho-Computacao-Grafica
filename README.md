@@ -101,14 +101,18 @@ rodar                     Windows/Git Bash build script
 
 ## Project history
 
-This repository began as an academic Computer Graphics assignment at UFC. The current version was subsequently reviewed, corrected, tested, and prepared for portfolio presentation. The Git history records one email address under the names `Ed1l3udo` and `Edileudo`; it does not provide reliable evidence to attribute every original academic contribution individually.
+This project was developed individually by Edileudo Maciel as an academic Computer Graphics assignment at the Federal University of Ceará (UFC). It was subsequently reviewed, corrected, tested, and prepared for portfolio presentation by the same author.
 
 ## Dependencies and asset credits
 
-- Raylib 5.5 is vendored in `external/raylib/`; GLFW is included as part of its desktop backend source tree.
-- The scene uses `models/patinho.obj`, `models/notebook.obj`, and `models/flat_earth03.ppm`.
+- Code and scene: Edileudo Maciel.
+- Duck model (`models/patinho.obj`): created by Edileudo Maciel.
+- Notebook model (`models/notebook.obj`): created by Edileudo Maciel.
+- Earth texture (`models/earth_blue_marble_nasa.ppm`): converted without artistic changes from NASA's [Blue Marble: Next Generation base map](https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/), using the official [January 5400×2700 JPEG](https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/january/world.200401.3x5400x2700.jpg).
+- NASA imagery is used under NASA's [Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/). NASA does not endorse this project.
+- Raylib 5.5 is vendored in `external/raylib/`; its unmodified [license](external/raylib/LICENSE) is included with this repository. GLFW is included as part of its desktop backend source tree.
 
-The checkout does not document the original source or license of the model and texture assets, and it does not include a Raylib license text alongside the vendored source. Confirm asset permissions and dependency-license documentation before public redistribution.
+The NASA source page does not identify third-party copyright for the selected base map, and the downloaded image contains no NASA logo.
 
 ## Limitations
 
