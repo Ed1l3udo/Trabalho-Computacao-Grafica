@@ -846,7 +846,7 @@ int main() {
         );
         
         // textura 
-        auto texGlobo =std::make_shared<ImageTexturePPM>("models/flat_earth03.ppm");
+        auto texGlobo =std::make_shared<ImageTexturePPM>("models/earth_blue_marble_nasa.ppm");
         globo->setTexture(texGlobo);
         
         globo->setTransform(Mat4::translation(globeCenter.x, globeCenter.y-1.21, globeCenter.z));
